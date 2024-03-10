@@ -130,7 +130,6 @@ fun CalendarHeader(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarMonthItem(
     modifier: Modifier = Modifier,

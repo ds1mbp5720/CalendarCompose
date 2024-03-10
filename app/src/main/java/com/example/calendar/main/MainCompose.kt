@@ -1,6 +1,8 @@
 package com.example.calendar.main
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,7 +11,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,12 +27,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.calendar.R
-import com.example.calendar.calendar.basic.BasicCalendar
 import com.example.calendar.calendar.basic.ModalBottomSheetCalendar
+import com.example.calendar.calendar.daily.DailyScreen
 import com.example.calendar.calendar.row.CalendarDataSource
 import com.example.calendar.calendar.row.RowCalendar
 import com.example.calendar.calendar.row.RowCalendarUiModel
@@ -45,7 +50,12 @@ fun MainScreen(
     var isFirst by remember { mutableStateOf(true) }
     var showBasicCalendar by remember { mutableStateOf(false) }
     var showDailyPlan by remember { mutableStateOf(false) }
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(modifier = modifier
+        .fillMaxWidth()
+        .wrapContentHeight()
+        .border(width = 1.dp, color = Color.LightGray, shape = RoundedCornerShape(bottomStart = 7.dp, bottomEnd = 7.dp)),
+        verticalArrangement = Arrangement.Top
+    ){
         Spacer(modifier = Modifier.height(20.dp))
         Header(
             data = data,
@@ -63,6 +73,7 @@ fun MainScreen(
         Spacer(modifier = Modifier.height(20.dp))
         RowCalendar(
             isFirst = isFirst,
+            showDailyPlan = showDailyPlan,
             data = data
         ) { date ->
             data = data.copy(
@@ -74,14 +85,16 @@ fun MainScreen(
                 }
             )
         }
+        Spacer(modifier = Modifier.height(15.dp))
+        if(showDailyPlan) {
+            DailyScreen()
+        }
+
         isFirst = false
         if(showBasicCalendar){
             ModalBottomSheetCalendar(
                 onDismiss = { showBasicCalendar = false }
             )
-        }
-        if(showDailyPlan) {
-            // todo show dailyPlan compose
         }
     }
 }
@@ -92,7 +105,7 @@ fun Header(
     onMonthClick: (LocalDate) -> Unit,
     onDailyPlanClick: (Boolean) -> Unit
 ) {
-    var showDailyPlan by remember { mutableStateOf(true) }
+    var showDailyPlan by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier.fillMaxWidth(),
     ) {
@@ -122,7 +135,7 @@ fun Header(
                     onDailyPlanClick(showDailyPlan)
                 }
             ,
-            text = if(showDailyPlan)  stringResource(id = R.string.str_week_plan_open)
+            text = if(!showDailyPlan)  stringResource(id = R.string.str_week_plan_open)
             else stringResource(id = R.string.str_week_plan_close)
         )
     }
