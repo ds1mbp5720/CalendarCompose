@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Calendar</string>
+
+    <string name="str_month">%s월</string>
+    <string name="str_week_plan_open">주간 일정 펼치기</string>
+    <string name="str_week_plan_close">주간 일정 접기</string>
+    <string name="str_today">오늘</string>
+    <string name="str_move_today">오늘로</string>
+
+    <string name="str_title_schedule">일정</string>
+    <string name="str_title_date">일자</string>
+    <string name="str_title_start_time">시작 시간</string>
+    <string name="str_title_end_time">종료 시간</string>
+</resources>
