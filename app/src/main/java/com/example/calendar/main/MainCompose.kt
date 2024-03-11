@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,21 +30,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.calendar.R
+import com.example.calendar.calendar.CalendarDataSource
+import com.example.calendar.calendar.CalendarUiModel
 import com.example.calendar.calendar.basic.ModalBottomSheetCalendar
 import com.example.calendar.calendar.daily.DailyScreen
-import com.example.calendar.calendar.row.CalendarDataSource
 import com.example.calendar.calendar.row.RowCalendar
-import com.example.calendar.calendar.row.RowCalendarUiModel
 import com.example.calendar.utils.changeString
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
 ){
     val dataSource = CalendarDataSource()
-    var data by remember { mutableStateOf(dataSource.getData(lastSelectedDate = dataSource.today)) }
+    var dateInfo by remember { mutableStateOf(dataSource.getData(lastSelectedDate = dataSource.today)) }
     var isFirst by remember { mutableStateOf(true) }
     var showBasicCalendar by remember { mutableStateOf(false) }
     var showDailyPlan by remember { mutableStateOf(false) }
@@ -58,32 +56,35 @@ fun MainScreen(
     ){
         Spacer(modifier = Modifier.height(20.dp))
         Header(
-            data = data,
+            dateInfo = dateInfo,
             onMonthClick = {
                 showBasicCalendar = !showBasicCalendar
             },
             onDailyPlanClick = {
                 showDailyPlan = it
             }
-            /*onPrevClickListener = { startDate ->
-                val finalStartDate = startDate.minusDays(1)
-                data = dataSource.getData(startDate = finalStartDate, lastSelectedDate = data.selectedDate.date)
-            }*/
         )
         Spacer(modifier = Modifier.height(20.dp))
         RowCalendar(
             isFirst = isFirst,
             showDailyPlan = showDailyPlan,
-            data = data
-        ) { date ->
-            data = data.copy(
-                selectedDate = date,
-                visibleDates = data.visibleDates.map {
-                    it.copy(
-                        isSelected = it.date.isEqual(date.date)
-                    )
+            dateInfo = dateInfo
+        ){ date ->
+            // 선택된 날짜의 월 != 이번달 rowCalendar(이번달) 재생성 필요
+            if(date.date.month != dateInfo.selectedDate.date.month) {
+                dateInfo = dataSource.getData(startDate = date.date, lastSelectedDate = date.date).also {
+                    isFirst = true
                 }
-            )
+            } else {
+                dateInfo = dateInfo.copy(
+                    selectedDate = date,
+                    visibleDates = dateInfo.visibleDates.map {
+                        it.copy(
+                            isSelected = it.date.isEqual(date.date)
+                        )
+                    }
+                )
+            }
         }
         Spacer(modifier = Modifier.height(15.dp))
         if(showDailyPlan) {
@@ -91,17 +92,22 @@ fun MainScreen(
         }
 
         isFirst = false
-        if(showBasicCalendar){
+        if(showBasicCalendar){ // 하단 캘린더 메뉴
             ModalBottomSheetCalendar(
-                onDismiss = { showBasicCalendar = false }
-            )
+                onDismiss = { showBasicCalendar = false },
+                dateInfo = dateInfo
+            ){ date ->
+                dateInfo = dataSource.getData(startDate = date.date, lastSelectedDate = date.date).also {
+                    isFirst = true
+                }
+            }
         }
     }
 }
 
 @Composable
 fun Header(
-    data: RowCalendarUiModel,
+    dateInfo: CalendarUiModel,
     onMonthClick: (LocalDate) -> Unit,
     onDailyPlanClick: (Boolean) -> Unit
 ) {
@@ -112,11 +118,11 @@ fun Header(
         Row(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .clickable { onMonthClick(data.startDate.date) }
+                .clickable { onMonthClick(dateInfo.startDate.date) }
         ){
             Text(
                 modifier = Modifier,
-                text = stringResource(id = R.string.str_month, data.selectedDate.date.month.changeString()),
+                text = stringResource(id = R.string.str_month, dateInfo.selectedDate.date.month.changeString()),
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.titleLarge
             )

@@ -1,4 +1,4 @@
-package com.example.calendar.calendar.row
+package com.example.calendar.calendar
 
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -11,11 +11,11 @@ class CalendarDataSource  {
             return LocalDate.now()
         }
 
-    fun getData(startDate: LocalDate = today, lastSelectedDate: LocalDate): RowCalendarUiModel {
+    fun getData(startDate: LocalDate = today, lastSelectedDate: LocalDate): CalendarUiModel {
         // 이번달 -3일 부터 15일까지 (표시 범위 정하기)
-        val firstDayOfWeek = startDate.withDayOfMonth(1).minusDays(3)
-        val endDayOfWeek = firstDayOfWeek.plusDays(31)
-        val visibleDates = getDatesBetween(firstDayOfWeek, endDayOfWeek)
+        val firstDayOfMonth = startDate.withDayOfMonth(1).minusDays(3)
+        val endDayOfMonth = firstDayOfMonth.plusDays(35)
+        val visibleDates = getDatesBetween(firstDayOfMonth, endDayOfMonth)
         return toUiModel(visibleDates, lastSelectedDate)
     }
 
@@ -31,8 +31,8 @@ class CalendarDataSource  {
     private fun toUiModel(
         dateList: List<LocalDate>,
         lastSelectedDate: LocalDate
-    ): RowCalendarUiModel {
-        return RowCalendarUiModel(
+    ): CalendarUiModel {
+        return CalendarUiModel(
             selectedDate = toItemUiModel(lastSelectedDate, true),
             visibleDates = dateList.map {
                 toItemUiModel(it, it.isEqual(lastSelectedDate))
@@ -40,7 +40,7 @@ class CalendarDataSource  {
         )
     }
 
-    private fun toItemUiModel(date: LocalDate, isSelectedDate: Boolean) = RowCalendarUiModel.Date(
+    private fun toItemUiModel(date: LocalDate, isSelectedDate: Boolean) = CalendarUiModel.Date(
         isSelected = isSelectedDate,
         isToday = date.isEqual(today),
         date = date,

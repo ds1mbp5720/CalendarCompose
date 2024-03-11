@@ -1,6 +1,7 @@
 package com.example.calendar.calendar.row
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,7 +19,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -34,19 +34,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.calendar.R
+import com.example.calendar.calendar.CalendarUiModel
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun RowCalendar(
     isFirst: Boolean,
     showDailyPlan: Boolean,
-    data: RowCalendarUiModel,
-    onDateClickListener: (RowCalendarUiModel.Date) -> Unit,
+    dateInfo: CalendarUiModel,
+    onDateClickListener: (CalendarUiModel.Date) -> Unit
 ) {
     val scrollState = rememberLazyListState()
     val scope = rememberCoroutineScope()
-    val selectedDate = data.visibleDates.indexOfFirst { it.isSelected }
+    val selectedDate = dateInfo.visibleDates.indexOfFirst { it.isSelected }
     if(isFirst){
         scope.launch {
             scrollState.scrollToItem(index = selectedDate)
@@ -61,7 +63,10 @@ fun RowCalendar(
                     .padding(vertical = 4.dp, horizontal = 6.dp)
                     .border(width = 1.dp, color = Color.LightGray, shape = RoundedCornerShape(10.dp))
                     .clickable {
-                        //todo move(select) today
+                        onDateClickListener(CalendarUiModel.Date(
+                            date = LocalDate.now(),
+                            isSelected = true,
+                            isToday = true))
                     },
                 colors = CardDefaults.cardColors(containerColor = Color.White),
             ) {
@@ -70,7 +75,7 @@ fun RowCalendar(
                 ) {
                     Text(
                         text = stringResource(id = R.string.str_today),
-                        color = Color.LightGray,
+                        color = Color.Gray,
                         modifier = Modifier.align(Alignment.CenterHorizontally),
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -82,33 +87,38 @@ fun RowCalendar(
                     ){
                         Icon(
                             imageVector = Icons.Filled.Refresh,
-                            contentDescription = "move_today")
+                            contentDescription = "move_today",
+                            tint = Color.Gray)
                     }
                 }
             }
         }
         LazyRow(state = scrollState){
-            items(data.visibleDates.size) {index ->
+            items(dateInfo.visibleDates.size) {index ->
                 RowCalendarItem(
-                    date = data.visibleDates[index],
-                    onDateClickListener
+                    date = dateInfo.visibleDates[index],
+                    onClickListener =
+                    if(dateInfo.selectedDate.date.month == dateInfo.visibleDates[index].date.month){
+                        onDateClickListener
+                    } else null
                 )
             }
         }
     }
-
 }
 
 @Composable
 fun RowCalendarItem(
-    date: RowCalendarUiModel.Date,
-    onClickListener: (RowCalendarUiModel.Date) -> Unit,
+    date: CalendarUiModel.Date,
+    onClickListener: ((CalendarUiModel.Date) -> Unit)?,
 ) {
     Card(
         modifier = Modifier
             .padding(vertical = 4.dp, horizontal = 4.dp)
             .clickable {
-                onClickListener(date)
+                if (onClickListener != null) {
+                    onClickListener(date)
+                }
             },
         colors = CardDefaults.cardColors(containerColor = Color.White),
     ) {

@@ -1,9 +1,9 @@
-package com.example.calendar.calendar.row
+package com.example.calendar.calendar
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-data class RowCalendarUiModel(
+data class CalendarUiModel(
     val selectedDate: Date,
     val visibleDates: List<Date>
 ) {

@@ -1,6 +1,7 @@
 package com.example.calendar.calendar.basic
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,18 +30,21 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.calendar.R
+import com.example.calendar.calendar.CalendarUiModel
+import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
@@ -48,7 +52,9 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModalBottomSheetCalendar(
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    dateInfo: CalendarUiModel,
+    onDateClickListener: (CalendarUiModel.Date) -> Unit
 ){
     val modalBottomSheetState = rememberModalBottomSheetState()
 
@@ -57,21 +63,29 @@ fun ModalBottomSheetCalendar(
         sheetState = modalBottomSheetState,
         dragHandle = { }
     ) {
-        BasicCalendar(onSelectedDate = {})
+        BasicCalendar(
+            dateInfo = dateInfo,
+            onDateClickListener ={
+                onDateClickListener.invoke(it)
+                onDismiss()
+            } ,
+            onMoveToday = onDateClickListener
+        )
     }
 }
 
 @Composable
 fun BasicCalendar(
     modifier: Modifier = Modifier.background(color = Color.White),
-    currentDate: LocalDate = LocalDate.now(),
+    dateInfo: CalendarUiModel,
     config: BasicCalendarConfig = BasicCalendarConfig(),
-    onSelectedDate: (LocalDate) -> Unit
+    onDateClickListener: (CalendarUiModel.Date) -> Unit,
+    onMoveToday: (CalendarUiModel.Date) -> Unit
 ) {
-    //page는 0부터 시작하기 때문에 getMonthValue - 1을 해줘야 함
-    val initialPage = (currentDate.year - config.yearRange.first) * 12 + currentDate.monthValue - 1
-    var currentSelectedDate by remember { mutableStateOf(currentDate) }
-    var currentMonth by remember { mutableStateOf(YearMonth.now()) }
+    val scope = rememberCoroutineScope()
+    //page 시작 0 이므로 -1
+    val initialPage = (dateInfo.selectedDate.date.year - config.yearRange.first) * 12 + dateInfo.selectedDate.date.monthValue - 1
+    var currentMonth by remember { mutableStateOf(dateInfo.selectedDate.date) }
     var currentPage by remember { mutableStateOf(initialPage) }
     val pageCount = (config.yearRange.last - config.yearRange.first) * 12
     val pagerState = rememberPagerState(initialPage = initialPage, pageCount = {pageCount})
@@ -86,11 +100,20 @@ fun BasicCalendar(
     Column(modifier = modifier) {
         Spacer(modifier = Modifier.height(20.dp))
         CalendarHeader(
-            text = headerText
+            text = headerText,
+            onMoveToday = {
+                onMoveToday(
+                    CalendarUiModel.Date(
+                        date = LocalDate.now(),
+                        isSelected = true,
+                        isToday = true))
+                scope.launch {
+                    pagerState.scrollToPage((dateInfo.selectedDate.date.year - config.yearRange.first) * 12 + LocalDate.now().monthValue -1)
+                }
+            }
         )
         Spacer(modifier = Modifier.height(16.dp))
         HorizontalPager(
-            //pageCount = pageCount,
             state = pagerState
         ) { page ->
             val date = LocalDate.of(
@@ -104,9 +127,9 @@ fun BasicCalendar(
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp),
                     currentDate = date,
-                    selectedDate = currentSelectedDate,
+                    selectedDate = dateInfo.selectedDate,
                     onSelectedDate = { selectedDate ->
-                        currentSelectedDate = selectedDate
+                        onDateClickListener(selectedDate)
                     }
                 )
             }
@@ -118,14 +141,31 @@ fun BasicCalendar(
 fun CalendarHeader(
     modifier: Modifier = Modifier,
     text: String,
+    onMoveToday: () -> Unit
 ) {
-    Box(modifier = modifier.fillMaxWidth()) {
+    Box(modifier = modifier
+        .fillMaxWidth()
+        .padding(start = 15.dp, end = 15.dp)
+    ) {
         Text(
             modifier = Modifier
+                .padding(top = 5.dp)
                 .align(Alignment.TopCenter),
             text = text,
             fontWeight = FontWeight.Bold,
             style = MaterialTheme.typography.bodyLarge
+        )
+        Text(
+            modifier = Modifier
+                .border(width = 1.dp, color = Color.LightGray, shape = RoundedCornerShape(10.dp))
+                .padding(5.dp)
+                .background(color = Color.White)
+                .align(Alignment.TopEnd)
+                .clickable { onMoveToday.invoke() }
+            ,
+            text = stringResource(id = R.string.str_move_today),
+            color = Color.LightGray,
+            style = MaterialTheme.typography.bodyMedium
         )
     }
 }
@@ -134,15 +174,15 @@ fun CalendarHeader(
 fun CalendarMonthItem(
     modifier: Modifier = Modifier,
     currentDate: LocalDate,
-    selectedDate: LocalDate,
-    onSelectedDate: (LocalDate) -> Unit
+    selectedDate: CalendarUiModel.Date,
+    onSelectedDate: (CalendarUiModel.Date) -> Unit
 ) {
     val lastDay by remember { mutableStateOf(currentDate.lengthOfMonth()) }
     val firstDayOfWeek by remember { mutableStateOf(currentDate.dayOfWeek.value) }
     val days by remember { mutableStateOf(IntRange(1, lastDay).toList()) }
 
     Column(modifier = modifier) {
-        DayOfWeek()
+        DayOfWeek() // 요일표시
         LazyVerticalGrid(
             modifier = Modifier.height(260.dp),
             columns = GridCells.Fixed(7)
@@ -158,14 +198,13 @@ fun CalendarMonthItem(
             }
             items(days) { day ->
                 val date = currentDate.withDayOfMonth(day)
-                val isSelected = remember(selectedDate) {
-                    selectedDate.compareTo(date) == 0
-                }
                 CalendarDay(
                     modifier = Modifier.padding(top = 10.dp),
-                    date = date,
-                    isToday = date == LocalDate.now(),
-                    isSelected = isSelected,
+                    date = CalendarUiModel.Date(
+                        date = date,
+                        isSelected = selectedDate.date.compareTo(date) == 0,
+                        isToday = false
+                    ),
                     onSelectedDate = onSelectedDate
                 )
             }
@@ -176,12 +215,11 @@ fun CalendarMonthItem(
 @Composable
 fun CalendarDay(
     modifier: Modifier = Modifier,
-    date: LocalDate,
-    isToday: Boolean,
-    isSelected: Boolean,
+    date: CalendarUiModel.Date,
     hasEvent: Boolean = false,
-    onSelectedDate: (LocalDate) -> Unit
+    onSelectedDate: (CalendarUiModel.Date) -> Unit
 ) {
+    val isSelected = date.isSelected
     Column(
         modifier = modifier
             .wrapContentSize()
@@ -205,7 +243,7 @@ fun CalendarDay(
         Text(
             modifier = Modifier,
             textAlign = TextAlign.Center,
-            text = date.dayOfMonth.toString(),
+            text = date.date.dayOfMonth.toString(),
             style = MaterialTheme.typography.bodyMedium,
             color = textColor
         )
@@ -223,6 +261,7 @@ fun CalendarDay(
     }
 }
 
+// 상단 요일 표시
 @Composable
 fun DayOfWeek(
     modifier: Modifier = Modifier
