@@ -57,7 +57,6 @@ fun ModalBottomSheetCalendar(
     onDateClickListener: (CalendarUiModel.Date) -> Unit
 ){
     val modalBottomSheetState = rememberModalBottomSheetState()
-
     ModalBottomSheet(
         onDismissRequest = { onDismiss() },
         sheetState = modalBottomSheetState,
@@ -68,12 +67,17 @@ fun ModalBottomSheetCalendar(
             onDateClickListener ={
                 onDateClickListener.invoke(it)
                 onDismiss()
-            } ,
+            } , // 두 버튼 기능은 동일, 날짜 선택시 bottomSheet 내림
             onMoveToday = onDateClickListener
         )
     }
 }
 
+/**
+ * 기본형 달력
+ * paging 활용 구현
+ * 날짜 클릭 이벤트 및 오늘 이동 버튼
+ */
 @Composable
 fun BasicCalendar(
     modifier: Modifier = Modifier.background(color = Color.White),
@@ -89,9 +93,8 @@ fun BasicCalendar(
     var currentPage by remember { mutableStateOf(initialPage) }
     val pageCount = (config.yearRange.last - config.yearRange.first) * 12
     val pagerState = rememberPagerState(initialPage = initialPage, pageCount = {pageCount})
-    val headerText = currentMonth.format(DateTimeFormatter.ofPattern("yyyy년 M월"))
 
-    LaunchedEffect(pagerState.currentPage) {
+    LaunchedEffect(pagerState.currentPage) { // 화면 이동시 달력 정보 갱신
         val addMonth = (pagerState.currentPage - currentPage).toLong()
         currentMonth = currentMonth.plusMonths(addMonth)
         currentPage = pagerState.currentPage
@@ -100,7 +103,7 @@ fun BasicCalendar(
     Column(modifier = modifier) {
         Spacer(modifier = Modifier.height(20.dp))
         CalendarHeader(
-            text = headerText,
+            text = currentMonth.format(DateTimeFormatter.ofPattern("yyyy년 M월")),
             onMoveToday = {
                 onMoveToday(
                     CalendarUiModel.Date(
@@ -137,6 +140,10 @@ fun BasicCalendar(
     }
 }
 
+/**
+ * (center)상단 년, 월 표시
+ * (end) 오늘 날짜 이동 버튼
+ */
 @Composable
 fun CalendarHeader(
     modifier: Modifier = Modifier,
@@ -182,12 +189,12 @@ fun CalendarMonthItem(
     val days by remember { mutableStateOf(IntRange(1, lastDay).toList()) }
 
     Column(modifier = modifier) {
-        DayOfWeek() // 요일표시
+        DayOfWeek() // 요일 표시
         LazyVerticalGrid(
             modifier = Modifier.height(260.dp),
             columns = GridCells.Fixed(7)
         ) {
-            for (i in 1 until firstDayOfWeek) { // 처음 날짜가 시작하는 요일 전까지 빈 박스 생성
+            for (i in 1 until firstDayOfWeek) { // 처음 날짜가 시작 요일 전까지 공백
                 item {
                     Box(
                         modifier = Modifier
@@ -216,7 +223,6 @@ fun CalendarMonthItem(
 fun CalendarDay(
     modifier: Modifier = Modifier,
     date: CalendarUiModel.Date,
-    hasEvent: Boolean = false,
     onSelectedDate: (CalendarUiModel.Date) -> Unit
 ) {
     val isSelected = date.isSelected
@@ -247,17 +253,6 @@ fun CalendarDay(
             style = MaterialTheme.typography.bodyMedium,
             color = textColor
         )
-        if (hasEvent) {
-            Box(
-                modifier = Modifier
-                    .size(4.dp)
-                    .clip(shape = RoundedCornerShape(4.dp))
-                    .background(
-                        if (isSelected) Color.LightGray
-                        else Color.White
-                    )
-            )
-        }
     }
 }
 

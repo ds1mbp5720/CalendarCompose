@@ -45,7 +45,6 @@ fun MainScreen(
 ){
     val dataSource = CalendarDataSource()
     var dateInfo by remember { mutableStateOf(dataSource.getData(lastSelectedDate = dataSource.today)) }
-    var isFirst by remember { mutableStateOf(true) }
     var showBasicCalendar by remember { mutableStateOf(false) }
     var showDailyPlan by remember { mutableStateOf(false) }
     Column(modifier = modifier
@@ -66,17 +65,14 @@ fun MainScreen(
         )
         Spacer(modifier = Modifier.height(20.dp))
         RowCalendar(
-            isFirst = isFirst,
             showDailyPlan = showDailyPlan,
             dateInfo = dateInfo
         ){ date ->
             // 선택된 날짜의 월 != 이번달 rowCalendar(이번달) 재생성 필요
-            if(date.date.month != dateInfo.selectedDate.date.month) {
-                dateInfo = dataSource.getData(startDate = date.date, lastSelectedDate = date.date).also {
-                    isFirst = true
-                }
+            dateInfo = if(date.date.month != dateInfo.selectedDate.date.month) {
+                dataSource.getData(startDate = date.date, lastSelectedDate = date.date)
             } else {
-                dateInfo = dateInfo.copy(
+                dateInfo.copy(
                     selectedDate = date,
                     visibleDates = dateInfo.visibleDates.map {
                         it.copy(
@@ -90,21 +86,22 @@ fun MainScreen(
         if(showDailyPlan) {
             DailyScreen()
         }
-
-        isFirst = false
         if(showBasicCalendar){ // 하단 캘린더 메뉴
             ModalBottomSheetCalendar(
                 onDismiss = { showBasicCalendar = false },
                 dateInfo = dateInfo
             ){ date ->
-                dateInfo = dataSource.getData(startDate = date.date, lastSelectedDate = date.date).also {
-                    isFirst = true
-                }
+                dateInfo = dataSource.getData(startDate = date.date, lastSelectedDate = date.date)
             }
         }
+
     }
 }
 
+/**
+ * (center)상단 월 표시, 달력 노출 버튼
+ * (end)주간 일정 보이기 버튼
+ */
 @Composable
 fun Header(
     dateInfo: CalendarUiModel,

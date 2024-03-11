@@ -7,7 +7,6 @@ data class CalendarUiModel(
     val selectedDate: Date,
     val visibleDates: List<Date>
 ) {
-
     val startDate: Date = visibleDates.first()
     val endDate: Date = visibleDates.last()
 
