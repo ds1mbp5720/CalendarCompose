@@ -33,10 +33,8 @@ import com.example.calendar.R
 import com.example.calendar.calendar.CalendarDataSource
 import com.example.calendar.calendar.CalendarUiModel
 import com.example.calendar.calendar.basic.ModalBottomSheetCalendar
-import com.example.calendar.calendar.daily.DailyScreen
-import com.example.calendar.calendar.row.RowCalendar
+import com.example.calendar.calendar.row.RowCalendarScreen
 import com.example.calendar.utils.changeString
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 @Composable
@@ -64,7 +62,7 @@ fun MainScreen(
             }
         )
         Spacer(modifier = Modifier.height(20.dp))
-        RowCalendar(
+        RowCalendarScreen(
             showDailyPlan = showDailyPlan,
             dateInfo = dateInfo
         ){ date ->
@@ -99,7 +97,7 @@ fun MainScreen(
  * (end)주간 일정 보이기 버튼
  */
 @Composable
-fun Header(
+private fun Header(
     dateInfo: CalendarUiModel,
     onMonthClick: (LocalDate) -> Unit,
     onDailyPlanClick: (Boolean) -> Unit

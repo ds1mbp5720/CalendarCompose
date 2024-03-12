@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,13 +45,11 @@ import java.time.LocalDate
 
 @SuppressLint("CoroutineCreationDuringComposition", "SuspiciousIndentation")
 @Composable
-fun RowCalendar(
+fun RowCalendarScreen(
     showDailyPlan: Boolean,
     dateInfo: CalendarUiModel,
     onDateClickListener: (CalendarUiModel.Date) -> Unit
 ) {
-    val configuration = LocalConfiguration.current // ui 조정을 위한 screen 화면 사이즈 얻기
-    val rowContentWidth = if(showDailyPlan) 8 else 7
     val scope = rememberCoroutineScope()
     // 얻은 날짜수 활용 주 계산
     val pageCount = when(dateInfo.visibleDates.size){
@@ -69,78 +68,90 @@ fun RowCalendar(
         }
     }
     Column(modifier = Modifier.fillMaxSize()) {
-        Row(modifier = Modifier
-            .fillMaxWidth()
-        ){
-            if(showDailyPlan){
-                Card(
-                    modifier = Modifier
-                        .width((configuration.screenWidthDp / rowContentWidth).dp)
-                        .padding(vertical = 4.dp, horizontal = 6.dp)
-                        .border(
-                            width = 1.dp,
-                            color = Color.LightGray,
-                            shape = RoundedCornerShape(10.dp)
-                        )
-                        .clickable {
-                            if (dateInfo.selectedDate.date == LocalDate.now()) {
-                                scope.launch {
-                                    pagerState.scrollToPage(selectedDateIndex / 7)
-                                }
-                            } else {
-                                onDateClickListener(
-                                    CalendarUiModel.Date(
-                                        date = LocalDate.now(),
-                                        isSelected = true,
-                                        isToday = true
-                                    )
-                                )
+        RowCalendar(
+            showDailyPlan = showDailyPlan,
+            dateInfo = dateInfo,
+            onDateClickListener = onDateClickListener,
+            pagerState = pagerState
+        )
+        Spacer(modifier = Modifier.height(15.dp))
+        if(showDailyPlan) {
+            DailyScreen(startDate = dateInfo.visibleDates[pagerState.currentPage * 7].date)
+        }
+    }
+}
+
+@Composable
+fun RowCalendar(
+    showDailyPlan: Boolean,
+    dateInfo: CalendarUiModel,
+    onDateClickListener: (CalendarUiModel.Date) -> Unit,
+    pagerState: PagerState
+) {
+    val configuration = LocalConfiguration.current // ui 조정을 위한 screen 화면 사이즈 얻기
+    val rowContentWidth = if(showDailyPlan) 8 else 7
+    val scope = rememberCoroutineScope()
+    val selectedDateIndex = dateInfo.visibleDates.indexOfFirst { it.isSelected }
+
+    Row(modifier = Modifier
+        .fillMaxWidth()
+    ){
+        if(showDailyPlan){
+            Card(
+                modifier = Modifier
+                    .width((configuration.screenWidthDp / rowContentWidth).dp)
+                    .padding(vertical = 4.dp, horizontal = 6.dp)
+                    .border(
+                        width = 1.dp,
+                        color = Color.LightGray,
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    .clickable {
+                        if (dateInfo.selectedDate.date == LocalDate.now()) {
+                            scope.launch {
+                                pagerState.scrollToPage(selectedDateIndex / 7)
                             }
-                        },
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                ) {
-                    Column(
-                        modifier = Modifier
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.str_today),
-                            color = Color.Gray,
-                            modifier = Modifier.align(Alignment.CenterHorizontally),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Spacer(modifier = Modifier.height(5.dp))
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp),
-                            contentAlignment = Alignment.Center
-                        ){
-                            Icon(
-                                imageVector = Icons.Filled.Refresh,
-                                contentDescription = "move_today",
-                                tint = Color.Gray)
+                        } else {
+                            onDateClickListener(
+                                CalendarUiModel.Date(
+                                    date = LocalDate.now(),
+                                    isSelected = true,
+                                    isToday = true
+                                )
+                            )
                         }
+                    },
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+            ) {
+                Column(
+                    modifier = Modifier
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.str_today),
+                        color = Color.Gray,
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(modifier = Modifier.height(5.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp),
+                        contentAlignment = Alignment.Center
+                    ){
+                        Icon(
+                            imageVector = Icons.Filled.Refresh,
+                            contentDescription = "move_today",
+                            tint = Color.Gray)
                     }
                 }
             }
-            HorizontalPager(state = pagerState) {page ->
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    for(i in 0 .. 6){
-                        val index = i + (page * 7)
-                        RowCalendarItem(
-                            modifier = Modifier.width((configuration.screenWidthDp / rowContentWidth).dp),
-                            date = dateInfo.visibleDates[index],
-                            onClickListener =
-                            if(dateInfo.selectedDate.date.month == dateInfo.visibleDates[index].date.month){ // 선택한 날짜와 같은 달에만 클릭 동작
-                                onDateClickListener
-                            } else null
-                        )
-                    }
-                }
-            }
-            /* // 가로 스크롤 방식
-            LazyRow(state = scrollState){
-                items(dateInfo.visibleDates.size) {index ->
+        }
+        HorizontalPager(state = pagerState) {page ->
+            Row(modifier = Modifier.fillMaxWidth()) {
+                for(i in 0 .. 6){
+                    val index = i + (page * 7)
                     RowCalendarItem(
+                        modifier = Modifier.width((configuration.screenWidthDp / rowContentWidth).dp),
                         date = dateInfo.visibleDates[index],
                         onClickListener =
                         if(dateInfo.selectedDate.date.month == dateInfo.visibleDates[index].date.month){ // 선택한 날짜와 같은 달에만 클릭 동작
@@ -148,12 +159,20 @@ fun RowCalendar(
                         } else null
                     )
                 }
-            }*/
+            }
         }
-        Spacer(modifier = Modifier.height(15.dp))
-        if(showDailyPlan) {
-            DailyScreen(startDate = dateInfo.visibleDates[pagerState.currentPage * 7].date)
-        }
+        /* // 가로 스크롤 방식
+        LazyRow(state = scrollState){
+            items(dateInfo.visibleDates.size) {index ->
+                RowCalendarItem(
+                    date = dateInfo.visibleDates[index],
+                    onClickListener =
+                    if(dateInfo.selectedDate.date.month == dateInfo.visibleDates[index].date.month){ // 선택한 날짜와 같은 달에만 클릭 동작
+                        onDateClickListener
+                    } else null
+                )
+            }
+        }*/
     }
 }
 

@@ -60,6 +60,7 @@ fun DailyScreen(
                               .clickable {
                                   // 날짜 startDate.plusDays(i.toLong()), 시간
                                   Log.e("","클릭 시간 및 날짜 체크 ${startDate.plusDays(i.toLong()).dayOfMonth} / ${timeFormat.format(index)}")
+                                  //todo 화면 이동, selectDate: startDate.plusDays(i.toLong()), 시간(스크롤 position) timeFormat.format(index)
                               }
                         ){
                         }
