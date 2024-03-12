@@ -103,7 +103,7 @@ fun BasicCalendar(
     Column(modifier = modifier) {
         Spacer(modifier = Modifier.height(20.dp))
         CalendarHeader(
-            text = currentMonth.format(DateTimeFormatter.ofPattern("yyyy년 M월")),
+            text = currentMonth.format(DateTimeFormatter.ofPattern("yyyy년 MM월")),
             onMoveToday = {
                 onMoveToday(
                     CalendarUiModel.Date(

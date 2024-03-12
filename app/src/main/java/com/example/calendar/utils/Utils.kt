@@ -37,3 +37,14 @@ fun Modifier.drawBottomLine(stroke: Dp = 1.dp) : Modifier{
         )
     }
 }
+
+fun Modifier.drawStartLine(stroke: Dp = 1.dp) : Modifier{
+    return this.drawBehind {
+        drawLine(
+            color = Color.Gray,
+            start = Offset(0f, 0f),
+            end = Offset(0f, size.height),
+            strokeWidth = stroke.toPx()
+        )
+    }
+}

@@ -22,18 +22,32 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.calendar.R
 import com.example.calendar.utils.drawBottomLine
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun ScheduleScreen(
-    //todo 시간, 날짜 정보 전달
+    date : LocalDate, //todo 시간 정보 전달
     onBackClick: () -> Unit
 ){
+    val week: String = when(date.dayOfWeek){
+        DayOfWeek.MONDAY -> "(월)"
+        DayOfWeek.TUESDAY -> "(화)"
+        DayOfWeek.WEDNESDAY -> "(수)"
+        DayOfWeek.THURSDAY -> "(목)"
+        DayOfWeek.FRIDAY -> "(금)"
+        DayOfWeek.SATURDAY -> "(토)"
+        DayOfWeek.SUNDAY -> "(일)"
+        else -> ""
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -56,7 +70,7 @@ fun ScheduleScreen(
                     modifier = Modifier
                         .drawBottomLine(1.dp),
                     title = stringResource(id = R.string.str_title_date),
-                    detail = "00월00일 (요일)" // 00월00일 (요일)
+                    detail = date.format(DateTimeFormatter.ofPattern("MM월 DD일")) + " " + week
                 )
                 ScheduleItem(
                     modifier = Modifier

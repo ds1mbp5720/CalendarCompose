@@ -19,8 +19,8 @@ class CalendarDataSource  {
         val endDayOfMonth = firstDayOfMonth.plusDays( firstDayOfMonth.lengthOfMonth().toLong() )
         val minusDayForPreSunday = firstDayOfMonth.dayOfWeek.value
         val preMonthSunday = firstDayOfMonth.minusDays(minusDayForPreSunday.toLong()) // 저번달 일요일
-        val plusDayForNextSunday = firstDayOfMonth.dayOfWeek.value
-        val nextMonthSunday = endDayOfMonth.plusDays((plusDayForNextSunday +1 ).toLong()) // 다음달 일요일 조정
+        val plusDayForNextSunday = 7 - endDayOfMonth.dayOfWeek.value
+        val nextMonthSunday = endDayOfMonth.plusDays(plusDayForNextSunday.toLong()) // 다음달 일요일 조정
         val visibleDates = getDatesBetween(preMonthSunday, nextMonthSunday)
         return toUiModel(visibleDates, lastSelectedDate)
     }

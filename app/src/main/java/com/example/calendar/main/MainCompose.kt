@@ -82,10 +82,6 @@ fun MainScreen(
                 )
             }
         }
-        Spacer(modifier = Modifier.height(15.dp))
-        if(showDailyPlan) {
-            DailyScreen()
-        }
         if(showBasicCalendar){ // 하단 캘린더 메뉴
             ModalBottomSheetCalendar(
                 onDismiss = { showBasicCalendar = false },
