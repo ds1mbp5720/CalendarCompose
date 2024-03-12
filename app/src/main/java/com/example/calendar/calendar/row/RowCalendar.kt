@@ -44,7 +44,7 @@ import com.example.calendar.calendar.CalendarUiModel
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
-@SuppressLint("CoroutineCreationDuringComposition")
+@SuppressLint("CoroutineCreationDuringComposition", "SuspiciousIndentation")
 @Composable
 fun RowCalendar(
     showDailyPlan: Boolean,
@@ -107,6 +107,7 @@ fun RowCalendar(
                 }
             }
         }
+        // todo 페이징으로 일월화수목금토 로 7일씩 잘라서 페이지 변경하기
         LazyRow(state = scrollState){
             items(dateInfo.visibleDates.size) {index ->
                 RowCalendarItem(

@@ -11,11 +11,17 @@ class CalendarDataSource  {
             return LocalDate.now()
         }
 
+    /**
+     * 저번달 일요일 ~ 다음달 토요일까지 표시
+     */
     fun getData(startDate: LocalDate = today, lastSelectedDate: LocalDate): CalendarUiModel {
-        // 이번달 -3일 부터 15일까지 (표시 범위 정하기)
-        val firstDayOfMonth = startDate.withDayOfMonth(1).minusDays(3)
-        val endDayOfMonth = firstDayOfMonth.plusDays(35)
-        val visibleDates = getDatesBetween(firstDayOfMonth, endDayOfMonth)
+        val firstDayOfMonth = startDate.withDayOfMonth(1)
+        val endDayOfMonth = firstDayOfMonth.plusDays( firstDayOfMonth.lengthOfMonth().toLong() )
+        val minusDayForPreSunday = firstDayOfMonth.dayOfWeek.value
+        val preMonthSunday = firstDayOfMonth.minusDays(minusDayForPreSunday.toLong()) // 저번달 일요일
+        val plusDayForNextSunday = firstDayOfMonth.dayOfWeek.value
+        val nextMonthSunday = endDayOfMonth.plusDays((plusDayForNextSunday +1 ).toLong()) // 다음달 일요일 조정
+        val visibleDates = getDatesBetween(preMonthSunday, nextMonthSunday)
         return toUiModel(visibleDates, lastSelectedDate)
     }
 
