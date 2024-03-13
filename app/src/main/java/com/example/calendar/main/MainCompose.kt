@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -41,6 +40,7 @@ import java.time.LocalDate
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
+    onClickTable: (LocalDate, Int) -> Unit
 ){
     val dataSource = CalendarDataSource()
     var dateInfo by remember { mutableStateOf(dataSource.getData(lastSelectedDate = dataSource.today)) }
@@ -48,7 +48,7 @@ fun MainScreen(
     var showDailyPlan by remember { mutableStateOf(false) }
     Column(modifier = modifier
         .fillMaxWidth()
-        .wrapContentHeight()
+        .height(if(showDailyPlan) 700.dp else 130.dp)
         .border(width = 1.dp, color = Color.LightGray, shape = RoundedCornerShape(bottomStart = 7.dp, bottomEnd = 7.dp)),
         verticalArrangement = Arrangement.Top
     ){
@@ -67,7 +67,10 @@ fun MainScreen(
             showDailyPlan = showDailyPlan,
             dateInfo = dateInfo,
             onContentSetting = {
-                DailyScreen(startDate = it)
+                DailyScreen(
+                    startDate = it,
+                    onClickTable = onClickTable
+                )
             }
         ){ date ->
             // 선택된 날짜의 월 != 이번달 rowCalendar(이번달) 재생성 필요

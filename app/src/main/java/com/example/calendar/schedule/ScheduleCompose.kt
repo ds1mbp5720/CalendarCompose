@@ -35,10 +35,11 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun ScheduleScreen(
-    date : LocalDate, //todo 시간 정보 전달
+    dateInfo : LocalDate,
+    time: Int, // if(index % 2 == 0) "30" else "00"
     onBackClick: () -> Unit
 ){
-    val week: String = when(date.dayOfWeek){
+    val week: String = when(dateInfo.dayOfWeek){
         DayOfWeek.MONDAY -> "(월)"
         DayOfWeek.TUESDAY -> "(화)"
         DayOfWeek.WEDNESDAY -> "(수)"
@@ -70,7 +71,7 @@ fun ScheduleScreen(
                     modifier = Modifier
                         .drawBottomLine(1.dp),
                     title = stringResource(id = R.string.str_title_date),
-                    detail = date.format(DateTimeFormatter.ofPattern("MM월 DD일")) + " " + week
+                    detail = dateInfo.format(DateTimeFormatter.ofPattern("MM월 dd일")) + " " + week
                 )
                 ScheduleItem(
                     modifier = Modifier

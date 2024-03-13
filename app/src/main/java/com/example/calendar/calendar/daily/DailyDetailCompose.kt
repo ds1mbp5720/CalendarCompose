@@ -41,15 +41,18 @@ import com.example.calendar.calendar.row.RowCalendar
 import com.example.calendar.calendar.row.RowCalendarScreen
 import com.example.calendar.utils.changeString
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 
 @Composable
 fun DailyDetailScreen(
-    dateInfo: CalendarUiModel,
-    onDailyClickListener: (CalendarUiModel.Date) -> Unit
+    dateInfo: LocalDate,
+    scrollPosition: Int = 0,
+    onClickTable: (LocalDate, Int) -> Unit,
+    onBackClick: () -> Unit
 ){
     val dataSource = CalendarDataSource()
-    var dailyDateInfo by remember { mutableStateOf(dateInfo) }
+    val dailyDateInfo by remember { mutableStateOf(dataSource.getData(lastSelectedDate = dateInfo)) }
     Column(modifier = Modifier
         .fillMaxWidth()
         .wrapContentHeight()
@@ -58,20 +61,20 @@ fun DailyDetailScreen(
     ){
         Spacer(modifier = Modifier.height(20.dp))
         Header(
-            dateInfo = dateInfo,
-            onBackClick = { } // todo 뒤로가기
+            dateInfo = dailyDateInfo,
+            onBackClick = onBackClick
         )
         Spacer(modifier = Modifier.height(20.dp))
         RowCalendarScreen(
             showDailyPlan = true,
-            dateInfo = dateInfo,
+            dateInfo = dailyDateInfo,
             onContentSetting = {
-                DailyDetailScreen(startDate = it)
+                DailyDetailTimeScreen(startDate = it, scrollPosition = scrollPosition, onClickTable = onClickTable)
             }
         ){date ->
             dailyDateInfo.copy(
                 selectedDate = date,
-                visibleDates = dateInfo.visibleDates.map {
+                visibleDates = dailyDateInfo.visibleDates.map {
                     it.copy(
                         isSelected = it.date.isEqual(date.date)
                     )
