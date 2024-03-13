@@ -25,7 +25,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.calendar.utils.drawBottomLine
+import com.example.calendar.utils.drawEndLine
 import com.example.calendar.utils.drawStartLine
+import com.example.calendar.utils.drawTopLine
 import java.time.LocalDate
 
 @Composable
@@ -62,6 +65,53 @@ fun DailyScreen(
                                   Log.e("","클릭 시간 및 날짜 체크 ${startDate.plusDays(i.toLong()).dayOfMonth} / ${timeFormat.format(index)}")
                                   //todo 화면 이동, selectDate: startDate.plusDays(i.toLong()), 시간(스크롤 position) timeFormat.format(index)
                               }
+                        ){
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DailyDetailScreen(
+    startDate: LocalDate // 현 페이지 시작 날짜 기준 클릭 위치 계산 (페이지 당 7개)
+){
+    val configuration = LocalConfiguration.current // ui 조정을 위한 screen 화면 사이즈 얻기
+    val planWidth = (configuration.screenWidthDp / 8).dp
+    val scrollState = rememberLazyListState()
+    val timeFormat = DecimalFormat("00")
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .height(550.dp)
+    ) {
+        LazyColumn(state = scrollState){
+            items(48){index -> // index % 2 == 0: 정각, == 1: 30분
+                Row(modifier = Modifier.fillMaxWidth()){
+                    Text(
+                        text = if(index % 2 == 0)timeFormat.format(index)
+                            else "",
+                        modifier = Modifier
+                            .size(planWidth, 55.dp)
+                            .padding(bottom = 15.dp)
+                            .drawEndLine(1.dp),
+                        textAlign = TextAlign.Center,
+                        color = Color.Black,
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                    for(i in 0 .. 6){
+                        Box(
+                            modifier = Modifier
+                                .size(planWidth, 55.dp)
+                                .drawTopLine(1.dp)
+                                .drawBottomLine(1.dp)
+                                .clickable {
+                                    // 날짜 startDate.plusDays(i.toLong()), 시간
+                                    Log.e("","클릭 시간 및 날짜 체크 ${startDate.plusDays(i.toLong()).dayOfMonth} / ${timeFormat.format(index)}")
+                                    //todo Schdeule() 이동, selectDate: startDate.plusDays(i.toLong()),
+                                    // 시간(스크롤 position) timeFormat.format(index), if(index % 2 == 0) "30" else "00"
+                                }
                         ){
                         }
                     }

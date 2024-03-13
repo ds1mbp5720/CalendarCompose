@@ -37,6 +37,16 @@ fun Modifier.drawBottomLine(stroke: Dp = 1.dp) : Modifier{
         )
     }
 }
+fun Modifier.drawTopLine(stroke: Dp = 1.dp) : Modifier{
+    return this.drawBehind {
+        drawLine(
+            color = Color.Gray,
+            start = Offset(0f, 0f),
+            end = Offset(size.width, 0f),
+            strokeWidth = stroke.toPx()
+        )
+    }
+}
 
 fun Modifier.drawStartLine(stroke: Dp = 1.dp) : Modifier{
     return this.drawBehind {
@@ -44,6 +54,17 @@ fun Modifier.drawStartLine(stroke: Dp = 1.dp) : Modifier{
             color = Color.Gray,
             start = Offset(0f, 0f),
             end = Offset(0f, size.height),
+            strokeWidth = stroke.toPx()
+        )
+    }
+}
+
+fun Modifier.drawEndLine(stroke: Dp = 1.dp) : Modifier{
+    return this.drawBehind {
+        drawLine(
+            color = Color.Gray,
+            start = Offset(size.width, 0f),
+            end = Offset(size.width, size.height),
             strokeWidth = stroke.toPx()
         )
     }

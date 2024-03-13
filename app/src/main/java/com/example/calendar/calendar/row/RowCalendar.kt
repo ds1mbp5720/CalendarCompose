@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -48,6 +49,7 @@ import java.time.LocalDate
 fun RowCalendarScreen(
     showDailyPlan: Boolean,
     dateInfo: CalendarUiModel,
+    onContentSetting : @Composable (LocalDate) -> Unit,
     onDateClickListener: (CalendarUiModel.Date) -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -76,7 +78,7 @@ fun RowCalendarScreen(
         )
         Spacer(modifier = Modifier.height(15.dp))
         if(showDailyPlan) {
-            DailyScreen(startDate = dateInfo.visibleDates[pagerState.currentPage * 7].date)
+            onContentSetting.invoke(dateInfo.visibleDates[pagerState.currentPage * 7].date)
         }
     }
 }

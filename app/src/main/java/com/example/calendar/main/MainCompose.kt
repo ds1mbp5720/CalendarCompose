@@ -33,6 +33,7 @@ import com.example.calendar.R
 import com.example.calendar.calendar.CalendarDataSource
 import com.example.calendar.calendar.CalendarUiModel
 import com.example.calendar.calendar.basic.ModalBottomSheetCalendar
+import com.example.calendar.calendar.daily.DailyScreen
 import com.example.calendar.calendar.row.RowCalendarScreen
 import com.example.calendar.utils.changeString
 import java.time.LocalDate
@@ -64,7 +65,10 @@ fun MainScreen(
         Spacer(modifier = Modifier.height(20.dp))
         RowCalendarScreen(
             showDailyPlan = showDailyPlan,
-            dateInfo = dateInfo
+            dateInfo = dateInfo,
+            onContentSetting = {
+                DailyScreen(startDate = it)
+            }
         ){ date ->
             // 선택된 날짜의 월 != 이번달 rowCalendar(이번달) 재생성 필요
             dateInfo = if(date.date.month != dateInfo.selectedDate.date.month) {
