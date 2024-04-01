@@ -3,6 +3,7 @@ package com.example.calendar.main
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavBackStackEntry
@@ -21,9 +22,9 @@ import java.time.LocalDate
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val mainViewModel : MainViewModel by viewModels()
         setContent {
             val navController = rememberCalendarNavController()
-
             CalendarTheme {
                 NavHost(
                     modifier = Modifier.wrapContentSize(),
@@ -31,6 +32,7 @@ class MainActivity : ComponentActivity() {
                     startDestination = MainDestination.MAIN
                 ) {
                     calendarNavGraph(
+                        mainViewModel = mainViewModel,
                         onDailySelect = navController::navigateToDetail,
                         onScheduleSelect = navController::navigateToSchedule,
                         upPress = navController::upPress
@@ -42,6 +44,7 @@ class MainActivity : ComponentActivity() {
 }
 
 private fun NavGraphBuilder.calendarNavGraph(
+    mainViewModel : MainViewModel,
     onDailySelect: (LocalDate, Int, NavBackStackEntry) -> Unit,
     onScheduleSelect: (LocalDate, Int, NavBackStackEntry) -> Unit,
     upPress: () -> Unit
@@ -49,8 +52,8 @@ private fun NavGraphBuilder.calendarNavGraph(
     composable(
         MainDestination.MAIN
     ) { backStackEntry ->
-        MainScreen() { date, scrollPosition ->
-            onDailySelect(date, scrollPosition,backStackEntry)
+        MainScreen( viewModel = mainViewModel ) { date, scrollPosition ->
+            onDailySelect(date, scrollPosition, backStackEntry)
         }
     }
     composable(
@@ -63,9 +66,9 @@ private fun NavGraphBuilder.calendarNavGraph(
         val arguments = requireNotNull(navBackStackEntry.arguments)
         val argDate = arguments.getString("localDate")
         val argPosition = arguments.getInt("scrollPosition")
-        val dateInfo = LocalDate.parse(argDate)
+        val dateInfo = LocalDate.parse(argDate) // viewModel 사용으로 현재 미사용
         DailyDetailScreen(
-            dateInfo = dateInfo,
+            viewModel = mainViewModel,
             scrollPosition = argPosition,
             onClickTable = { date, time ->
                 onScheduleSelect(date, time, navBackStackEntry)

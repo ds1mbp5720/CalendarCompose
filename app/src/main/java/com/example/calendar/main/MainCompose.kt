@@ -28,8 +28,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.calendar.R
-import com.example.calendar.calendar.CalendarDataSource
 import com.example.calendar.calendar.CalendarUiModel
 import com.example.calendar.calendar.basic.ModalBottomSheetCalendar
 import com.example.calendar.calendar.daily.DailyScreen
@@ -40,26 +40,28 @@ import java.time.LocalDate
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
+    viewModel: MainViewModel = viewModel(),
     onClickTable: (LocalDate, Int) -> Unit
 ){
-    val dataSource = CalendarDataSource()
-    var dateInfo by remember { mutableStateOf(dataSource.getData(lastSelectedDate = dataSource.today)) }
+    var dateInfo by remember { mutableStateOf(viewModel.dateInfo) }
     var showBasicCalendar by remember { mutableStateOf(false) }
-    var showDailyPlan by remember { mutableStateOf(false) }
+    var showDailyPlan by remember { mutableStateOf(viewModel.showDailyPlan) }
     Column(modifier = modifier
         .fillMaxWidth()
-        .height(if(showDailyPlan) 700.dp else 130.dp)
+        .height(if (showDailyPlan) 700.dp else 130.dp)
         .border(width = 1.dp, color = Color.LightGray, shape = RoundedCornerShape(bottomStart = 7.dp, bottomEnd = 7.dp)),
         verticalArrangement = Arrangement.Top
     ){
         Spacer(modifier = Modifier.height(20.dp))
         Header(
+            preSelect = viewModel.showDailyPlan,
             dateInfo = dateInfo,
             onMonthClick = {
                 showBasicCalendar = !showBasicCalendar
             },
             onDailyPlanClick = {
                 showDailyPlan = it
+                viewModel.showDailyPlan = it
             }
         )
         Spacer(modifier = Modifier.height(20.dp))
@@ -75,7 +77,8 @@ fun MainScreen(
         ){ date ->
             // 선택된 날짜의 월 != 이번달 rowCalendar(이번달) 재생성 필요
             dateInfo = if(date.date.month != dateInfo.selectedDate.date.month) {
-                dataSource.getData(startDate = date.date, lastSelectedDate = date.date)
+                //dataSource.getData(startDate = date.date, lastSelectedDate = date.date)
+                viewModel.dataSource.getData(startDate = date.date, lastSelectedDate = date.date)
             } else {
                 dateInfo.copy(
                     selectedDate = date,
@@ -86,13 +89,14 @@ fun MainScreen(
                     }
                 )
             }
+            viewModel.dateInfo = dateInfo
         }
         if(showBasicCalendar){ // 하단 캘린더 메뉴
             ModalBottomSheetCalendar(
                 onDismiss = { showBasicCalendar = false },
                 dateInfo = dateInfo
             ){ date ->
-                dateInfo = dataSource.getData(startDate = date.date, lastSelectedDate = date.date)
+                dateInfo = viewModel.dataSource.getData(startDate = date.date, lastSelectedDate = date.date)
             }
         }
 
@@ -105,11 +109,12 @@ fun MainScreen(
  */
 @Composable
 private fun Header(
+    preSelect: Boolean,
     dateInfo: CalendarUiModel,
     onMonthClick: (LocalDate) -> Unit,
     onDailyPlanClick: (Boolean) -> Unit
 ) {
-    var showDailyPlan by remember { mutableStateOf(false) }
+    var showDailyPlan by remember { mutableStateOf(preSelect) }
     Box(
         modifier = Modifier.fillMaxWidth(),
     ) {
