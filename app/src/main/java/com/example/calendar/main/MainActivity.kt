@@ -1,7 +1,6 @@
 package com.example.calendar.main
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.wrapContentSize
@@ -30,7 +29,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.wrapContentSize(),
                     navController = navController.navController,
                     startDestination = MainDestination.MAIN
-                ){
+                ) {
                     calendarNavGraph(
                         onDailySelect = navController::navigateToDetail,
                         onScheduleSelect = navController::navigateToSchedule,
@@ -43,43 +42,52 @@ class MainActivity : ComponentActivity() {
 }
 
 private fun NavGraphBuilder.calendarNavGraph(
-  onDailySelect: (LocalDate, NavBackStackEntry) -> Unit,
-  onScheduleSelect: (LocalDate, NavBackStackEntry) -> Unit,
-  upPress: () -> Unit
+    onDailySelect: (LocalDate, Int, NavBackStackEntry) -> Unit,
+    onScheduleSelect: (LocalDate, Int, NavBackStackEntry) -> Unit,
+    upPress: () -> Unit
 ) {
     composable(
         MainDestination.MAIN
-    ){backStackEntry ->
-        Log.e("","메인 화면 생성 동작")
-        MainScreen(){ date, scrollPosition ->
-            onDailySelect(date,backStackEntry)
+    ) { backStackEntry ->
+        MainScreen() { date, scrollPosition ->
+            onDailySelect(date, scrollPosition,backStackEntry)
         }
     }
     composable(
-        "${MainDestination.DETAIL}/{localDate}",
-        arguments = listOf(navArgument("localDate") { type = NavType.StringType})
-    ){navBackStackEntry ->
+        "${MainDestination.DETAIL}/{localDate}/{scrollPosition}",
+        arguments = listOf(
+            navArgument("localDate") { type = NavType.StringType },
+            navArgument("scrollPosition") { type = NavType.IntType }
+        )
+    ) { navBackStackEntry ->
         val arguments = requireNotNull(navBackStackEntry.arguments)
         val argDate = arguments.getString("localDate")
+        val argPosition = arguments.getInt("scrollPosition")
         val dateInfo = LocalDate.parse(argDate)
         DailyDetailScreen(
             dateInfo = dateInfo,
-            //scrollPosition = ,
+            scrollPosition = argPosition,
             onClickTable = { date, time ->
-                onScheduleSelect(date, navBackStackEntry)
+                onScheduleSelect(date, time, navBackStackEntry)
             },
-            onBackClick = upPress)
+            onBackClick = upPress
+        )
     }
     composable(
-        "${MainDestination.SCHEDULE}/{localDate}",
-        arguments = listOf(navArgument("localDate") { type =  NavType.StringType})
-    ){navBackStackEntry ->
+        "${MainDestination.SCHEDULE}/{localDate}/{timeInfo}",
+        arguments = listOf(
+            navArgument("localDate") { type = NavType.StringType },
+            navArgument("timeInfo") { type = NavType.IntType }
+        )
+    ) { navBackStackEntry ->
         val arguments = requireNotNull(navBackStackEntry.arguments)
         val argDate = arguments.getString("localDate")
+        val argTime = arguments.getInt("timeInfo")
         val dateInfo = LocalDate.parse(argDate)
         ScheduleScreen(
             dateInfo = dateInfo,
-            time = 0, //todo
-            onBackClick = upPress)
+            timePosition = argTime,
+            onBackClick = upPress
+        )
     }
 }

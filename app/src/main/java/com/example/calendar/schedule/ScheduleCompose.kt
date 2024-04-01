@@ -1,5 +1,6 @@
 package com.example.calendar.schedule
 
+import android.icu.text.DecimalFormat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.calendar.R
 import com.example.calendar.utils.drawBottomLine
+import com.example.calendar.utils.positionToTimeSetting
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -36,7 +38,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ScheduleScreen(
     dateInfo : LocalDate,
-    time: Int, // if(index % 2 == 0) "30" else "00"
+    timePosition: Int, // if(index % 2 == 0) "30" else "00"
     onBackClick: () -> Unit
 ){
     val week: String = when(dateInfo.dayOfWeek){
@@ -77,11 +79,11 @@ fun ScheduleScreen(
                     modifier = Modifier
                         .drawBottomLine(1.dp),
                     title = stringResource(id = R.string.str_title_start_time),
-                    detail = "00:00" // 00:00
+                    detail = positionToTimeSetting(timePosition)
                 )
                 ScheduleItem(
                     title = stringResource(id = R.string.str_title_end_time),
-                    detail = "00:00" // 00:00
+                    detail = positionToTimeSetting(timePosition + 1)
                 )
             }
         }

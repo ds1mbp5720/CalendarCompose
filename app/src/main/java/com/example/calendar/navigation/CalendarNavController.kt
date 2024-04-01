@@ -30,14 +30,14 @@ class CalendarNavController(
 ){
     fun upPress() { navController.navigateUp() }
 
-    fun navigateToDetail(dateInfo: LocalDate, from: NavBackStackEntry) {
+    fun navigateToDetail(dateInfo: LocalDate, scrollPosition: Int, from: NavBackStackEntry) {
         if(from.lifeCycleIsResume()){
-            navController.navigate("${MainDestination.DETAIL}/$dateInfo")
+            navController.navigate("${MainDestination.DETAIL}/$dateInfo/$scrollPosition")
         }
     }
-    fun navigateToSchedule(dateInfo: LocalDate, from: NavBackStackEntry) {
+    fun navigateToSchedule(dateInfo: LocalDate, timeInfo: Int, from: NavBackStackEntry) {
         if(from.lifeCycleIsResume()){
-            navController.navigate("${MainDestination.SCHEDULE}/$dateInfo")
+            navController.navigate("${MainDestination.SCHEDULE}/$dateInfo/$timeInfo")
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.example.calendar.utils
 
+import android.icu.text.DecimalFormat
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -10,24 +11,24 @@ import java.time.Month
 import java.time.Month.*
 
 fun Month.changeString(): String {
-    return when(this.toString()){
+    return when (this.toString()) {
         JANUARY.toString() -> "01"
         FEBRUARY.toString() -> "02"
-        MARCH.toString()-> "03"
-        APRIL.toString()-> "04"
-        MAY.toString()-> "05"
-        JUNE.toString()-> "06"
-        JULY.toString()-> "07"
-        AUGUST.toString()-> "08"
-        SEPTEMBER.toString()-> "09"
-        OCTOBER.toString()-> "10"
+        MARCH.toString() -> "03"
+        APRIL.toString() -> "04"
+        MAY.toString() -> "05"
+        JUNE.toString() -> "06"
+        JULY.toString() -> "07"
+        AUGUST.toString() -> "08"
+        SEPTEMBER.toString() -> "09"
+        OCTOBER.toString() -> "10"
         NOVEMBER.toString() -> "11"
         DECEMBER.toString() -> "12"
         else -> "00"
     }
 }
 
-fun Modifier.drawBottomLine(stroke: Dp = 1.dp) : Modifier{
+fun Modifier.drawBottomLine(stroke: Dp = 1.dp): Modifier {
     return this.drawBehind {
         drawLine(
             color = Color.Gray,
@@ -37,7 +38,8 @@ fun Modifier.drawBottomLine(stroke: Dp = 1.dp) : Modifier{
         )
     }
 }
-fun Modifier.drawTopLine(stroke: Dp = 1.dp) : Modifier{
+
+fun Modifier.drawTopLine(stroke: Dp = 1.dp): Modifier {
     return this.drawBehind {
         drawLine(
             color = Color.Gray,
@@ -48,7 +50,7 @@ fun Modifier.drawTopLine(stroke: Dp = 1.dp) : Modifier{
     }
 }
 
-fun Modifier.drawStartLine(stroke: Dp = 1.dp) : Modifier{
+fun Modifier.drawStartLine(stroke: Dp = 1.dp): Modifier {
     return this.drawBehind {
         drawLine(
             color = Color.Gray,
@@ -59,7 +61,7 @@ fun Modifier.drawStartLine(stroke: Dp = 1.dp) : Modifier{
     }
 }
 
-fun Modifier.drawEndLine(stroke: Dp = 1.dp) : Modifier{
+fun Modifier.drawEndLine(stroke: Dp = 1.dp): Modifier {
     return this.drawBehind {
         drawLine(
             color = Color.Gray,
@@ -68,4 +70,10 @@ fun Modifier.drawEndLine(stroke: Dp = 1.dp) : Modifier{
             strokeWidth = stroke.toPx()
         )
     }
+}
+
+fun positionToTimeSetting(selectPosition: Int): String {
+    val timeFormat = DecimalFormat("00")
+    return timeFormat.format((selectPosition / 2)) + ":" + if(selectPosition % 2 == 0) "00" else "30"
+
 }
